@@ -1,66 +1,150 @@
 # AI-Driven-AMR-Biosafety-Dashboard
-A Machine Learning Dashboard for Antimicrobial Resistance Surveillance, Trend Analysis, and Biosafety Risk Evaluation
+A research-grade analytical pipeline for Antimicrobial Resistance (AMR) surveillance, trend analysis, and machine-learning prediction, designed for clinical researchers, public health teams, and LMIC biosafety environments.
 
-This project is an AI-powered biosurveillance system that analyzes Antimicrobial Resistance (AMR) trends using clinical datasets, global antibiotic usage statistics, and machine learning.
-It provides:
+This project automatically processes AMR surveillance CSV files to generate:
 
 📊 Resistance trends
 
-🧬 ML-based AMR predictions
+🦠 Pathogen–drug resistance profiles
 
-⚠️ Biosafety risk scores
+🤖 Machine learning predictions
 
-🌍 One-Health context using OWID antibiotic usage
+🔥 AMR risk scoring
 
-🧪 Interactive visualizations
+🗺️ Hotspot identification
 
-🧾 Auto-generated insights
+📈 Interactive dashboards
 
-The entire workflow is deployed as a Streamlit dashboard with modern UI, Lottie animations, and interactive controls.
+🚨 Problem Statement
 
-🚀 Features
-🧠 Machine Learning
+Antimicrobial resistance is rising globally, especially in low-resource settings where antimicrobial misuse, poor diagnostics, and limited surveillance accelerate resistant infections. Existing AMR datasets are fragmented, inconsistent, imbalanced, and difficult to analyze.
 
-RandomForestRegressor for AMR prediction
+Although machine learning can support AMR prediction, adoption is limited because:
 
-OneHotEncoding + Pipeline for clean preprocessing
+AMR datasets suffer from class imbalance, missing values, and low quality
 
-R² & RMSE performance metrics
+Resistance patterns vary across regions — models lack generalizability
 
-Predicts future resistance rate
+There is no easy-to-use tool that integrates ML and AMR surveillance
 
-Generates AMR Risk Score (0–100)
+This project solves these challenges by building a complete, automated AMR analytics system that combines data cleaning, feature engineering, ML modeling, and biosafety visualization in a single research-ready dashboard.
 
-📊 Visual Analytics
+📐 Methodology
 
-Pathogen × Antibiotic heatmaps
+The system follows an 8-stage research pipeline:
 
-Resistance rate vs. time trend plots
+1. Data Acquisition
 
-High-risk combinations table
+Users upload CSV files with columns:
 
-Interactive filters
+location, year, pathogen, antibiotic, n_tested, n_resistant
 
-🌍 One-Health Integration
+2. Data Preprocessing
 
-Merges AMR dataset with:
+Remove invalid/duplicate rows
 
-OWID antibiotic usage in children
+Handle missing values
 
-OWID livestock antibiotic consumption (tonnes)
+Encode categorical variables
 
-This provides deeper insight into environmental & human-driven AMR pressure.
+Fix class imbalance via SMOTE
 
-🖥️ Modern Web Dashboard
+Standardize formats (pathogen/antibiotic normalization)
 
-Built using Streamlit with:
+3. Feature Engineering
 
-Lottie animations
+Compute resistance percentage (n_resistant/n_tested × 100)
 
-Responsive layout
+Yearly trends
 
-File uploader
+Pathogen–antibiotic interaction features
 
-Sidebar controls
+Hotspot identification metrics
 
-Real-time model predictions
+4. Exploratory Data Analysis (EDA)
+
+Automatic generation of:
+
+Resistance trend lines
+
+Heatmaps
+
+Country/pathogen comparisons
+
+Resistant vs susceptible distributions
+
+5. Machine Learning Model Training
+
+Models supported:
+
+Logistic Regression
+
+Random Forest
+
+SVM
+
+Decision Trees
+
+K-Means for clustering
+
+Training framework:
+
+80/20 stratified split
+
+Cross-validation
+
+Hyperparameter tuning
+
+6. Model Evaluation
+
+Metrics used:
+
+Accuracy
+
+Precision
+
+Recall
+
+F1-score
+
+Balanced Accuracy
+
+AUC-ROC
+
+7. Risk Scoring Engine
+
+AMR severity labeled as:
+
+Low (<20%)
+
+Moderate (20–50%)
+
+High (50–70%)
+
+Critical (>70%)
+
+8. Dashboard Deployment
+
+Interactive Streamlit dashboard:
+
+Upload CSV
+
+View trends & heatmaps
+
+See model predictions
+
+Export analysis output
+
+📚 Research Contribution
+
+This project contributes:
+
+A unified AMR surveillance and ML prediction framework
+
+Support for LMIC surveillance datasets
+
+A pipeline addressing class imbalance, data quality issues, and low generalizability
+
+A deployable biosafety dashboard
+
+Explainable ML for antimicrobial stewardship
