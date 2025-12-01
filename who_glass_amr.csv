@@ -1,0 +1,57 @@
+location,year,pathogen,antibiotic,n_tested,n_resistant,gene
+India,2019,E.coli,ciprofloxacin,320,165,gyrA
+India,2020,E.coli,ciprofloxacin,340,185,parC
+India,2021,E.coli,ciprofloxacin,360,210,mcr-1
+India,2022,E.coli,ciprofloxacin,380,240,NEW-GENE-X
+India,2019,K.pneumoniae,meropenem,240,55,blaNDM
+India,2020,K.pneumoniae,meropenem,260,70,blaKPC
+India,2021,K.pneumoniae,meropenem,280,95,OXA-48
+India,2022,K.pneumoniae,meropenem,300,120,NOVEL-AMR-2
+India,2020,S.aureus,oxacillin,200,45,mecA
+India,2021,S.aureus,oxacillin,220,65,mecC
+India,2022,S.aureus,oxacillin,240,80,UNCHAR-GENE-1
+Nepal,2019,E.coli,ciprofloxacin,150,60,parE
+Nepal,2020,E.coli,ciprofloxacin,160,70,qnrS
+Nepal,2021,E.coli,ciprofloxacin,170,85,mcr-2
+Nepal,2022,E.coli,ciprofloxacin,180,100,NEW-GENE-A7
+Nepal,2019,S.aureus,oxacillin,90,18,mecA
+Nepal,2020,S.aureus,oxacillin,100,22,qacA
+Nepal,2021,S.aureus,oxacillin,120,35,qacB
+Nepal,2022,S.aureus,oxacillin,130,40,NOVEL-STAPH-X
+Bangladesh,2019,K.pneumoniae,meropenem,200,35,blaOXA
+Bangladesh,2020,K.pneumoniae,meropenem,210,46,blaNDM
+Bangladesh,2021,K.pneumoniae,meropenem,220,58,blaKPC
+Bangladesh,2022,K.pneumoniae,meropenem,230,72,NEW-CARB-GENE
+Bangladesh,2019,E.coli,trimethoprim,170,75,folA
+Bangladesh,2020,E.coli,trimethoprim,180,85,folP
+Bangladesh,2021,E.coli,trimethoprim,185,95,dfrA1
+Bangladesh,2022,E.coli,trimethoprim,190,110,UNCHAR-RES-4
+South Africa,2019,E.coli,ciprofloxacin,280,110,gyrA
+South Africa,2020,E.coli,ciprofloxacin,290,130,parC
+South Africa,2021,E.coli,ciprofloxacin,300,150,qnrB
+South Africa,2022,E.coli,ciprofloxacin,320,170,NEW-AFRICA-GENE
+South Africa,2019,S.aureus,oxacillin,220,60,mecA
+South Africa,2020,S.aureus,oxacillin,230,75,mecC
+South Africa,2021,S.aureus,oxacillin,240,92,qacA
+South Africa,2022,S.aureus,oxacillin,250,105,UNKNOWN-GENE-SA
+Nigeria,2019,E.coli,ciprofloxacin,200,95,gyrA
+Nigeria,2020,E.coli,ciprofloxacin,210,110,parE
+Nigeria,2021,E.coli,ciprofloxacin,230,130,qnrA
+Nigeria,2022,E.coli,ciprofloxacin,240,145,NEW-GENE-NG
+Nigeria,2019,K.pneumoniae,ceftazidime,160,70,blaCTX-M
+Nigeria,2020,K.pneumoniae,ceftazidime,170,80,blaSHV
+Nigeria,2021,K.pneumoniae,ceftazidime,180,95,blaTEM
+Nigeria,2022,K.pneumoniae,ceftazidime,200,115,UNCHAR-BETA-1
+Brazil,2020,E.coli,ceftriaxone,250,95,blaCTX-M
+Brazil,2021,E.coli,ceftriaxone,260,110,blaTEM
+Brazil,2022,E.coli,ceftriaxone,280,130,UNCHAR-BETA-3
+Brazil,2020,K.pneumoniae,meropenem,150,25,blaNDM
+Brazil,2021,K.pneumoniae,meropenem,170,35,OXA-48
+Brazil,2022,K.pneumoniae,meropenem,180,50,NEW-CARB-GENE-2
+Mexico,2019,E.coli,ampicillin,300,200,blaTEM
+Mexico,2020,E.coli,ampicillin,320,220,blaSHV
+Mexico,2021,E.coli,ampicillin,340,245,blaOXA
+Mexico,2022,E.coli,ampicillin,360,260,UNKNOWN-BLA-X
+Mexico,2020,S.aureus,clindamycin,200,40,ermA
+Mexico,2021,S.aureus,clindamycin,220,50,ermC
+Mexico,2022,S.aureus,clindamycin,230,60,NEW-MACRO-GENE
