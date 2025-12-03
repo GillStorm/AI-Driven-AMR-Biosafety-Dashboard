@@ -27,10 +27,10 @@ Designed for **clinical researchers**, **public health teams**, and **LMIC biosa
 - **Trend Validation**: Goes beyond visual lines. Uses the **Mann-Kendall Trend Test** to statistically validate increasing/decreasing resistance trends.
 - **P-Values**: Filters and highlights only statistically significant trends ($p < 0.05$).
 
-### 4. 🧪 Synthetic Lab (Generative AI)
-- **Data Augmentation**: Solves the "Data Scarcity" problem in LMICs using **CTGAN (Conditional Tabular GAN)**.
-- **Privacy-Preserving**: Generates realistic, synthetic surveillance data that mimics the statistical properties of real data without compromising patient privacy.
-- **Downloadable**: Users can generate and download 1,000+ synthetic samples for research.
+### 4. 📊 Literature-Style Visualization
+- **Global Burden Analysis**: Mimics the visualization styles found in major 2024 research papers (e.g., *The Lancet* Global Burden of AMR study).
+- **Median & IQR**: Displays resistance rates by pathogen with error bars representing the Interquartile Range (IQR) to show global variability.
+- **Data Integrity**: Strictly uses real-world WHO GLASS 2022 data to generate these insights, ensuring no synthetic or fake data is used.
 
 ### 5. ⚠️ Multidimensional Risk Scoring
 - **Composite Index**: Calculates a dynamic risk score based on:
@@ -38,6 +38,28 @@ Designed for **clinical researchers**, **public health teams**, and **LMIC biosa
 - **Prioritization**: Automatically ranks the top 10 highest-risk pathogen-antibiotic combinations for immediate intervention.
 
 ---
+
+## 📂 Data Sources & Validation
+
+The dashboard currently relies on high-quality, real-world surveillance data:
+
+### 1. WHO GLASS 2022 (Official)
+- **Source**: World Health Organization (WHO) Global Antimicrobial Resistance and Use Surveillance System (GLASS).
+- **Description**: This dataset represents the official AMR reporting from member countries for the data year 2022 (published in the 2024 report). It includes resistance profiles for priority pathogens like *E. coli*, *K. pneumoniae*, and *S. aureus* against key antibiotic classes.
+- **Data Collection**:
+    - Data is collected from national surveillance centers which aggregate results from local hospitals and laboratories.
+    - Participating countries follow standardized protocols for testing (AST) and reporting.
+- **Validation**:
+    - **WHO Validation**: The WHO performs rigorous internal consistency checks on the submitted data to ensure quality and comparability across regions.
+    - **Dashboard Validation**: We perform additional preprocessing to:
+        - Map country codes and pathogen names to a unified schema.
+        - Filter out incomplete records (missing denominators or resistance counts).
+        - Standardize antibiotic names.
+- **Why 2022?**: Global surveillance data has a reporting lag. The 2022 dataset is the most recent *comprehensive* public dataset available in a structured format as of late 2024.
+
+### 2. User Uploads
+- Researchers and hospital administrators can upload their own local surveillance data (CSV) to analyze it using the same advanced ML and statistical tools.
+- **Privacy**: Uploaded data is processed locally in memory and is not stored or shared.
 
 ## 🛠️ Installation
 

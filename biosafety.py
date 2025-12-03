@@ -13,8 +13,6 @@ import xgboost as xgb
 import shap
 import pymannkendall as mk
 import numpy as np
-from sdv.single_table import CTGANSynthesizer
-from sdv.metadata import SingleTableMetadata
 
 # ---------------------------------------------------------
 # BASIC PAGE CONFIG (no external animations -> more stable)
@@ -38,15 +36,27 @@ st.write(
 # ---------------------------------------------------------
 # SIDEBAR
 # ---------------------------------------------------------
-st.sidebar.header("📂 Upload Your AMR Dataset")
-uploaded_file = st.sidebar.file_uploader("Upload CSV file", type=["csv"])
+# ---------------------------------------------------------
+# SIDEBAR
+# ---------------------------------------------------------
+st.sidebar.header("📂 Data Source")
+data_source = st.sidebar.radio(
+    "Select Data Source:",
+    ("Upload CSV", "WHO GLASS 2022 (Official)")
+)
 
+if data_source == "Upload CSV":
+    uploaded_file = st.sidebar.file_uploader("Upload CSV file", type=["csv"])
+else:
+    uploaded_file = None
+
+st.sidebar.markdown("---")
+st.sidebar.header("⚙️ Settings")
 show_plots = st.sidebar.checkbox("Show Visualizations", True, help="Trends & heatmaps")
 show_risk = st.sidebar.checkbox("Show Multidimensional Risk Scores", True, help="Composite risk scoring")
 show_novelty = st.sidebar.checkbox("Show Novelty Detection", True, help="Spike/novelty alerts")
 show_shap = st.sidebar.checkbox("Show SHAP Explanations", True, help="Explainable AI for model predictions")
 show_stats = st.sidebar.checkbox("Show Statistical Trends", True, help="Mann-Kendall Trend Tests")
-show_synthetic = st.sidebar.checkbox("🧪 Show Synthetic Lab (GANs)", False, help="Generate synthetic data using CTGAN")
 
 st.sidebar.markdown("---")
 st.sidebar.info("Expected columns: location, year, pathogen, antibiotic, n_tested, n_resistant (+ optional gene).")
@@ -54,10 +64,22 @@ st.sidebar.info("Expected columns: location, year, pathogen, antibiotic, n_teste
 # ---------------------------------------------------------
 # MAIN LOGIC
 # ---------------------------------------------------------
-if uploaded_file is not None:
+df = None
+
+if data_source == "Upload CSV":
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+elif data_source == "WHO GLASS 2022 (Official)":
+    try:
+        df = pd.read_csv("who_glass_2022_processed.csv")
+        st.info("Using official WHO GLASS 2022 dataset.")
+    except FileNotFoundError:
+        st.error("File 'who_glass_2022_processed.csv' not found. Please run preprocessing.")
+
+if df is not None:
 
     # ---------- LOAD DATA ----------
-    df = pd.read_csv(uploaded_file)
+    # df is already loaded above
 
     st.subheader("📄 Data Preview")
     st.dataframe(df.head())
@@ -172,46 +194,115 @@ if uploaded_file is not None:
         st.pyplot(fig_shap)
 
     # ---------------------------------------------------------
-    # STATISTICAL TRENDS (Mann-Kendall)
+    # 5. STATISTICAL TRENDS (Mann-Kendall)
     # ---------------------------------------------------------
     if show_stats:
-        st.subheader("📉 Statistical Trend Analysis (Mann-Kendall)")
+        st.header("5. 📉 Statistical Trend Analysis (Mann-Kendall)")
+        st.write("Validating trends statistically (p < 0.05 indicates significance).")
         
+        # We need time series: Location + Pathogen + Antibiotic
+        # Group by year
         trend_results = []
         
-        # Group by location, pathogen, antibiotic
-        grouped = df.groupby(["location", "pathogen", "antibiotic"])
+        # Get unique combinations
+        combos = df[["location", "pathogen", "antibiotic"]].drop_duplicates()
         
-        for name, group in grouped:
-            if len(group) >= 4: # Need at least 4 points for a meaningful trend
-                group = group.sort_values("year")
+        for idx, row in combos.iterrows():
+            loc, path, ab = row["location"], row["pathogen"], row["antibiotic"]
+            subset = df[(df["location"] == loc) & (df["pathogen"] == path) & (df["antibiotic"] == ab)]
+            subset = subset.sort_values("year")
+            
+            if len(subset) >= 3: # MK test needs at least a few points
+                # Calculate resistance rate
+                subset["rate"] = subset["n_resistant"] / subset["n_tested"]
                 try:
-                    mk_result = mk.original_test(group["resistance_rate"])
+                    result = mk.original_test(subset["rate"])
                     trend_results.append({
-                        "location": name[0],
-                        "pathogen": name[1],
-                        "antibiotic": name[2],
-                        "trend": mk_result.trend,
-                        "p_value": mk_result.p,
-                        "slope": mk_result.slope
+                        "Location": loc,
+                        "Pathogen": path,
+                        "Antibiotic": ab,
+                        "Trend": result.trend,
+                        "Slope": result.slope,
+                        "P-Value": result.p,
+                        "Significant": result.p < 0.05
                     })
                 except:
                     pass
         
         if trend_results:
             trend_df = pd.DataFrame(trend_results)
-            st.write("#### Significant Trends (p < 0.05)")
-            sig_trends = trend_df[trend_df["p_value"] < 0.05]
-            st.dataframe(sig_trends)
+            st.dataframe(trend_df)
             
-            # Merge slope back to df for risk score
-            df = df.merge(trend_df[["location", "pathogen", "antibiotic", "slope"]], 
-                          on=["location", "pathogen", "antibiotic"], 
-                          how="left")
-            df["slope"] = df["slope"].fillna(0)
+            # Highlight significant increasing trends
+            worsening = trend_df[(trend_df["Significant"] == True) & (trend_df["Slope"] > 0)]
+            if not worsening.empty:
+                st.error(f"⚠️ Found {len(worsening)} statistically significant WORSENING trends!")
+                st.dataframe(worsening)
+            else:
+                st.success("No statistically significant worsening trends found in this dataset.")
         else:
-            st.info("Not enough data points per group for Mann-Kendall test.")
-            df["slope"] = 0
+            st.info("Not enough data points for trend analysis.")
+
+    # ---------------------------------------------------------
+    # 6. LITERATURE-STYLE VISUALIZATION (Lancet 2024 Style)
+    # ---------------------------------------------------------
+    st.markdown("---")
+    st.header("6. 📊 Global Burden Analysis (Lancet Style)")
+    st.info("Visualizing resistance rates by pathogen, mimicking the 'Global burden of bacterial AMR' (Lancet, 2024) chart styles using the official WHO GLASS 2022 data.")
+    
+    # Calculate aggregated resistance rates by pathogen
+    # We want to show the median resistance rate with an interquartile range (IQR) to show variability across countries
+    df["resistance_rate"] = df["n_resistant"] / df["n_tested"]
+    
+    # Group by Pathogen
+    pathogen_stats = df.groupby("pathogen")["resistance_rate"].agg(
+        median="median",
+        q1=lambda x: x.quantile(0.25),
+        q3=lambda x: x.quantile(0.75),
+        count="count"
+    ).sort_values("median", ascending=True).reset_index()
+    
+    # Filter out pathogens with very few data points
+    pathogen_stats = pathogen_stats[pathogen_stats["count"] > 10]
+    
+    if not pathogen_stats.empty:
+        fig_lit, ax_lit = plt.subplots(figsize=(10, 6))
+        
+        # Create horizontal bar chart with error bars (representing IQR)
+        # Calculate error bars: [median - q1, q3 - median]
+        errors = [
+            pathogen_stats["median"] - pathogen_stats["q1"],
+            pathogen_stats["q3"] - pathogen_stats["median"]
+        ]
+        
+        y_pos = np.arange(len(pathogen_stats))
+        
+        ax_lit.errorbar(
+            pathogen_stats["median"], 
+            y_pos, 
+            xerr=errors, 
+            fmt='o', 
+            color='black', 
+            ecolor='gray', 
+            capsize=5, 
+            label='Median Rate (with IQR)'
+        )
+        ax_lit.barh(y_pos, pathogen_stats["median"], align='center', alpha=0.6, color='#d62728')
+        
+        ax_lit.set_yticks(y_pos)
+        ax_lit.set_yticklabels(pathogen_stats["pathogen"], fontsize=10, fontweight='bold')
+        ax_lit.set_xlabel('Resistance Rate (Proportion)', fontsize=12)
+        ax_lit.set_title('Global Resistance Burden by Pathogen (Median & IQR)', fontsize=14)
+        ax_lit.grid(axis='x', linestyle='--', alpha=0.7)
+        
+        # Add data labels
+        for i, v in enumerate(pathogen_stats["median"]):
+            ax_lit.text(v + 0.02, i, f"{v:.2f}", color='black', va='center', fontsize=9)
+            
+        st.pyplot(fig_lit)
+        st.caption("Figure 1: Median resistance rates for priority pathogens across all reporting countries. Error bars represent the Interquartile Range (IQR), showing the variability in resistance burdens globally. Source: WHO GLASS 2022.")
+    else:
+        st.warning("Not enough data to generate the literature-style plot.")
 
     # ---------------------------------------------------------
     # MULTIDIMENSIONAL RISK SCORE
@@ -377,65 +468,6 @@ if uploaded_file is not None:
                 st.pyplot(fig)
         except Exception as e:
             st.warning(f"Could not create heatmap: {e}")
-
-    # ---------------------------------------------------------
-    # SYNTHETIC LAB (GANs)
-    # ---------------------------------------------------------
-    if show_synthetic:
-        st.subheader("🧪 Synthetic Lab (Generative AI)")
-        st.markdown(
-            """
-            **Novelty**: Use **CTGAN (Conditional Tabular GAN)** to learn the distribution of your AMR data 
-            and generate **realistic synthetic samples**. This solves the "Data Scarcity" problem in LMICs.
-            """
-        )
-        
-        if st.button("🚀 Train GAN & Generate Synthetic Data"):
-            with st.spinner("Training CTGAN... This may take a minute..."):
-                try:
-                    # 1. Prepare Metadata
-                    metadata = SingleTableMetadata()
-                    metadata.detect_from_dataframe(df)
-                    
-                    # 2. Initialize CTGAN
-                    # Use fewer epochs for demo speed, but enough to learn something
-                    synthesizer = CTGANSynthesizer(metadata, epochs=100, verbose=True)
-                    
-                    # 3. Train
-                    synthesizer.fit(df)
-                    
-                    # 4. Generate
-                    synthetic_data = synthesizer.sample(num_rows=1000)
-                    
-                    st.success("✅ Synthetic Data Generated Successfully!")
-                    
-                    st.write("### 🧬 Synthetic Data Preview")
-                    st.dataframe(synthetic_data.head())
-                    
-                    # 5. Download
-                    csv = synthetic_data.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "📥 Download Synthetic Dataset",
-                        csv,
-                        "synthetic_amr_data.csv",
-                        "text/csv",
-                        key='download-csv'
-                    )
-                    
-                    # 6. Quality Check (Simple Visual)
-                    st.write("### 📊 Real vs Synthetic Distribution (Resistance Rate)")
-                    fig_comp, ax_comp = plt.subplots(1, 2, figsize=(12, 4))
-                    
-                    sns.histplot(df["resistance_rate"], ax=ax_comp[0], color="blue", kde=True)
-                    ax_comp[0].set_title("Real Data")
-                    
-                    sns.histplot(synthetic_data["resistance_rate"], ax=ax_comp[1], color="green", kde=True)
-                    ax_comp[1].set_title("Synthetic Data (GAN)")
-                    
-                    st.pyplot(fig_comp)
-                    
-                except Exception as e:
-                    st.error(f"GAN Training Failed: {e}")
 
 else:
     st.info("📥 Upload a CSV file to begin analysis. Use the sample datasets I provided.")
